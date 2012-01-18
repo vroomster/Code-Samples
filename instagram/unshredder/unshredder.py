@@ -78,17 +78,16 @@ def avg_edge_diff(x, num_columns, right):
 
 
 # Find best shreds that fit the left and right borders of unshredded picture
-def find_best_fit(left_fit, right_fit):	
-	left_slice_diff = avg_edge_diff(unshred_left_border(), slice_width, True)
-	right_slice_diff = avg_edge_diff(unshred_right_border(), slice_width, False)
-
+def find_best_fit(left_fit, right_fit):			
 	if left_fit['piece'] == None:
+		left_slice_diff = avg_edge_diff(unshred_left_border(), slice_width, True)
 	  for left, right in shreds.iteritems():
 		  left_edge_diff = edge_diff(unshred_left_border(), right)		
 		  if abs(left_edge_diff - left_slice_diff) < left_fit['diff']:
 			  left_fit.update( { 'diff': abs(left_edge_diff - left_slice_diff), 'piece': (left, right) } )
 	
 	if right_fit['piece'] == None:
+		right_slice_diff = avg_edge_diff(unshred_right_border(), slice_width, False)
 	  for left, right in shreds.iteritems():
 		  right_edge_diff = edge_diff(unshred_right_border(), left)		
 		  if abs(right_edge_diff - right_slice_diff) < right_fit['diff']:
@@ -109,6 +108,24 @@ def unshred():
 			unshredded.append(right_fit['piece'])
 			del shreds[right_fit['piece'][0]]
 			right_fit.update({'diff': sys.maxint, 'piece': None})		 
+
+
+def unshred_rec(left, right):	
+	if left_fit['piece'] == None:
+		left_slice_diff = avg_edge_diff(unshred_left_border(), slice_width, True)
+	  for left, right in shreds.iteritems():
+		  left_edge_diff = edge_diff(unshred_left_border(), right)		
+		  if abs(left_edge_diff - left_slice_diff) < left_fit['diff']:
+			  left_fit.update( { 'diff': abs(left_edge_diff - left_slice_diff), 'piece': (left, right) } )
+	
+	if right_fit['piece'] == None:
+		right_slice_diff = avg_edge_diff(unshred_right_border(), slice_width, False)
+	  for left, right in shreds.iteritems():
+		  right_edge_diff = edge_diff(unshred_right_border(), left)		
+		  if abs(right_edge_diff - right_slice_diff) < right_fit['diff']:
+		 	  right_fit.update( { 'diff': abs(right_edge_diff - right_slice_diff), 'piece': (left, right) } )
+	return left_fit, right_fit
+
 
 				
 
