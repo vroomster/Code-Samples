@@ -14,13 +14,8 @@ plays = []
 sorted_plays = None
 
 # Write the output in the format: 12.34% PlayName-PlayName-PlayName
-def writeOutput((sequence_success_rate, sequence_freq)):
-  play_names=[]
-  for index, freq in enumerate(sequence_freq):
-    play_name, play_gain, play_success_rate = sorted_plays[index]
-    for i in range(freq):
-      play_names.append(play_name)
-  play_sequence = '-'.join(play_names)
+def writeOutput((sequence_success_rate, sequence_freq)):  
+  play_sequence = '-'.join([sorted_plays[index][0] for index, freq in enumerate(sequence_freq) for i in range(freq) ])
   output_file.write("%s%% %s\n" % ((sequence_success_rate*100).quantize(Decimal('.01')), play_sequence))
 
 # Calculate the most successful play or sequence of plays that ends in the goal area
@@ -64,3 +59,21 @@ with open(sys.argv[1], 'r') as input_file:
     
    
 
+#plays = [ ('ShortLeft', 1, .98), ('ShortRight', 2, .97), ('MidRange', 18, .8), ('LongBomb', 36, .64) ]
+#sorted_plays = sorted(plays, key=itemgetter(1), reverse=True)
+
+
+
+
+
+
+
+#print sorted_plays
+
+#print calcBestPlaySeries(	3, 5)
+
+#print calcBestPlaySeries(20, 5)
+ 
+#print calcBestPlaySeries(	34, 10)
+
+#print calcBestPlaySeries(	75, 5)
