@@ -1,4 +1,11 @@
 # coding: utf-8
+# Author: Varun Bandi
+# Date: 1/18/2012
+# Usage: python unshredder.py <input image name>
+# Purpose: Unshredding programming puzzle -- See problem Text
+# Solution: Calculate where the shreds are, assumes uniform widths
+#     then starting with one shred, figure out best fit shred to go to left or right of it
+#     repeat until all shreds are attached
 from PIL import Image
 import sys
 
@@ -9,22 +16,19 @@ shred_threshold = 1.25
 # This could be optomized by going to an array of the first n primes
 prime_factors = []
 
-# Checks if i is prime_factor by checking if any previous 
-# saved prime factor divides it
-def check_if_prime_factor(i):
-	for j in prime_factors:
-		if i % j == 0:
-			return False
-	return True
+# Checks if i is prime_factor by checking if any previoussaved
+#   prime factor divides it
+def is_prime_factor(i): return not any(i%factor == 0 for factor in prime_factors)	
 
 # Calculates the position of all possible shreds
 # TODO possibly a better way to do this??
 def possible_shred_positions():
   shred_positions = set([])
-  for i in range(2, width/2):
-    if width % i == 0 and check_if_prime_factor(i):      
-  	  for j in range(i, width, i):
-	  	  shred_positions.add(j-1)
+  for i in range(2, width/2):	
+		if width % i == 0 and is_prime_factor(i):
+			prime_factors.append(i)      			
+			for j in range(i, width, i):
+				shred_positions.add(j-1)	
   return shred_positions
 
 
@@ -42,29 +46,20 @@ def calc_shreds():
 	shreds.update({shred_left_border:width-1})
 
 
-#def left_border(piece_num): return piece_num * shred_width
-#def right_border(piece_num): return (piece_num+1) * shred_width - 1
-
 def unshred_left_border(): return unshredded[0][0]
 def unshred_right_border(): return unshredded[len(unshredded)-1][1]
-
 def get_pixel_value(x, y): return data[y * width + x]
 		
 #Calculate absolute difference between pixel values
-def add(x,y): return x + y
-def abs_diff(x, y): return abs(x - y)
-def pixel_diff(p1, p2): return reduce(add, map (abs_diff, p1, p2))
+def pixel_diff(p1, p2): return reduce(lambda x,y: x+y, map (lambda x,y: abs(x-y), p1, p2))
 
 #Calculate the pixel difference between 2 columns in the image
 def edge_diff(x1, x2):
 	diff = edge_diffs.setdefault((x1,x2))
 	if diff == None:
 		diff = 0
-		for i in range(0, height):
-		  #min_diff = sys.maxint
-		  #for j in range(-slice_height+1, slice_height):
-		  diff += pixel_diff(get_pixel_value(x1, i), get_pixel_value(x2, i))
-		  #diff += min_diff
+		for i in range(0, height):		 
+		  diff += pixel_diff(get_pixel_value(x1, i), get_pixel_value(x2, i))		 				
 		edge_diffs[(x1,x2)] = diff
 	return diff
 
@@ -78,69 +73,50 @@ def avg_edge_diff(x, num_columns, right):
 
 
 # Find best shreds that fit the left and right borders of unshredded picture
-def find_best_fit(left_fit, right_fit):			
-	if left_fit['piece'] == None:
+def find_best_fit((left_fit_diff,left_fit_piece), (right_fit_diff, right_fit_piece)):			
+	if left_fit_piece == None:
 		left_slice_diff = avg_edge_diff(unshred_left_border(), slice_width, True)
-	  for left, right in shreds.iteritems():
-		  left_edge_diff = edge_diff(unshred_left_border(), right)		
-		  if abs(left_edge_diff - left_slice_diff) < left_fit['diff']:
-			  left_fit.update( { 'diff': abs(left_edge_diff - left_slice_diff), 'piece': (left, right) } )
+		for left, right in shreds.iteritems():
+			left_edge_diff = edge_diff(unshred_left_border(), right)		
+			if abs(left_edge_diff - left_slice_diff) < left_fit_diff:
+				left_fit_diff, left_fit_piece = abs(left_edge_diff - left_slice_diff), (left, right) 
 	
-	if right_fit['piece'] == None:
+	if right_fit_piece == None:
 		right_slice_diff = avg_edge_diff(unshred_right_border(), slice_width, False)
-	  for left, right in shreds.iteritems():
-		  right_edge_diff = edge_diff(unshred_right_border(), left)		
-		  if abs(right_edge_diff - right_slice_diff) < right_fit['diff']:
-		 	  right_fit.update( { 'diff': abs(right_edge_diff - right_slice_diff), 'piece': (left, right) } )
-	return left_fit, right_fit
+		for left, right in shreds.iteritems():
+			right_edge_diff = edge_diff(unshred_right_border(), left)		
+			if abs(right_edge_diff - right_slice_diff) < right_fit_diff:
+				right_fit_diff, right_fit_piece =  abs(right_edge_diff - right_slice_diff), (left, right)
+	return (left_fit_diff, left_fit_piece), (right_fit_diff, right_fit_piece)
 
 # Main method that unshreds the picture by finding next best possible fitting shred
 def unshred():
 	calc_shreds()
 	unshredded.append(shreds.popitem())	
+	(left_fit_diff,left_fit_piece), (right_fit_diff, right_fit_piece) = (sys.maxint, None), (sys.maxint, None)
 	while len(shreds) > 0:
-		left_fit, right_fit = find_best_fit({'diff': sys.maxint, 'piece': None}, {'diff': sys.maxint, 'piece': None})	
-		if left_fit['diff'] < right_fit['diff']:
-		  unshredded.insert(0, left_fit['piece'])
-		  del shreds[left_fit['piece'][0]] 
-		  left_fit.update({'diff': sys.maxint, 'piece': None})
+		((left_fit_diff,left_fit_piece), (right_fit_diff, right_fit_piece)) = find_best_fit((left_fit_diff,left_fit_piece), (right_fit_diff, right_fit_piece))
+		if left_fit_diff < right_fit_diff:
+		  unshredded.insert(0, left_fit_piece)
+		  del shreds[left_fit_piece[0]] 
+		  left_fit_diff, left_fit_piece = (sys.maxint, None)
 		else:
-			unshredded.append(right_fit['piece'])
-			del shreds[right_fit['piece'][0]]
-			right_fit.update({'diff': sys.maxint, 'piece': None})		 
+			unshredded.append(right_fit_piece)
+			del shreds[right_fit_piece[0]]
+			right_fit_diff, right_fit_piece = (sys.maxint, None)
 
-
-def unshred_rec(left, right):	
-	if left_fit['piece'] == None:
-		left_slice_diff = avg_edge_diff(unshred_left_border(), slice_width, True)
-	  for left, right in shreds.iteritems():
-		  left_edge_diff = edge_diff(unshred_left_border(), right)		
-		  if abs(left_edge_diff - left_slice_diff) < left_fit['diff']:
-			  left_fit.update( { 'diff': abs(left_edge_diff - left_slice_diff), 'piece': (left, right) } )
-	
-	if right_fit['piece'] == None:
-		right_slice_diff = avg_edge_diff(unshred_right_border(), slice_width, False)
-	  for left, right in shreds.iteritems():
-		  right_edge_diff = edge_diff(unshred_right_border(), left)		
-		  if abs(right_edge_diff - right_slice_diff) < right_fit['diff']:
-		 	  right_fit.update( { 'diff': abs(right_edge_diff - right_slice_diff), 'piece': (left, right) } )
-	return left_fit, right_fit
-
-
-				
 
 #The actual gritty details to unshred the given picture
 unshredded = []
 shreds = {}
 edge_diffs = {}
 
-image = Image.open("shredded.png")
+image = Image.open(sys.argv[1])
 data = image.getdata() # This gets pixel data  
 width, height = image.size  
   
 unshred()
 
-print unshredded
 unshredded_image = Image.new('RGBA', image.size)
 j,k = 0,0
 for left,right in unshredded:

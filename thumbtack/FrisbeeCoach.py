@@ -1,6 +1,6 @@
 # Author: Varun Bandi
 # Date: 1/15/2012
-# Usage: python FrisbeeCoach.py <input
+# Usage: python FrisbeeCoach.py <input file name> <output file name>
 # Purpose: Programming puzzle -- See problem Text
 # Solution: Recurive dynamic programming solution where we we save the most
 #     optimal plays for any smaller distance computed. This way, extra work 
@@ -58,22 +58,3 @@ with open(sys.argv[1], 'r') as input_file:
         writeOutput( calcBestPlays(int(split_line[0]), int(split_line[1]) ))
     
    
-
-#plays = [ ('ShortLeft', 1, .98), ('ShortRight', 2, .97), ('MidRange', 18, .8), ('LongBomb', 36, .64) ]
-#sorted_plays = sorted(plays, key=itemgetter(1), reverse=True)
-
-
-
-
-
-
-
-#print sorted_plays
-
-#print calcBestPlaySeries(	3, 5)
-
-#print calcBestPlaySeries(20, 5)
- 
-#print calcBestPlaySeries(	34, 10)
-
-#print calcBestPlaySeries(	75, 5)
