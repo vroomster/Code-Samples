@@ -49,7 +49,7 @@ class Board(object):
     while temp_i < self.height-1 and self.board[j][temp_i] == self.board[j][temp_i+1]:
     	count+=1
     	temp_i+=1
-    return count == num
+    return count == num-1
 
   def checkDiagnolConnection(self, move, num):
     (j,i) = move
@@ -63,7 +63,7 @@ class Board(object):
       count+=1    		
       temp_i-=1
       temp_j-=1
-    return count == num
+    return count == num-1
     count == 0
     temp_i,temp_j = i,j
     while (temp_i > 0 and temp_j < self.width-1) and self.board[temp_j][temp_i] == self.board[temp_j+1][temp_i-1]:
@@ -75,7 +75,7 @@ class Board(object):
       count+=1    		
       temp_i-=1
       temp_j-=1
-    return count == num
+    return count == num-1
 
   def printGameState(self, over):
   	sys.stdout.write("GAMEOVER? " + str(over))
