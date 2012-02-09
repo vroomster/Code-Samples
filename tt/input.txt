@@ -1,0 +1,8 @@
+Play: ShortLeft 1 2
+Play: ShortRight 2 3
+Play: MidRange 18 20
+Play: LongBomb 36 36
+20 5
+34 10
+75 5
+300 50

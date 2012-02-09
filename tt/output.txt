@@ -1,0 +1,4 @@
+77.60% MidRange-ShortRight
+64.00% LongBomb
+38.94% LongBomb-LongBomb-ShortRight-ShortRight-ShortLeft
+2.34% LongBomb-LongBomb-LongBomb-LongBomb-LongBomb-LongBomb-LongBomb-LongBomb-ShortRight-ShortRight-ShortRight-ShortRight-ShortRight-ShortRight
